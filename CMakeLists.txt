@@ -3,7 +3,6 @@ cmake_minimum_required(VERSION 2.8.11)
 project(ZeroconfLib)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/config)
-set(CMAKE_AUTOMOC ON)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
 
 #--------------------------------------------------------------------
