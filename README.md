@@ -13,6 +13,15 @@ make
 **Note:**
 The *install* step is not implemented yet! Let me know if you need it :)
 
+**Build for iOS**
+For iOS, you need a cross compiled version of boost. See also https://github.com/faithfracture/Apple-Boost-BuildScript.
+Put the __include__ and __lib__ directory of boost to "/path/to/your-project/../boost-ios".
+
+cmake -DIOS=ON -DBOOST_IOS_ROOT="/path/to/your/boost_root/" ../ZeroconfLib
+make
+
+__BOOST_IOS_ROOT__ should contain the __include__and __lib__ directories with all boost sources/libs. 
+
 ### Documentation
 Publish a zeroconf service:
 ```cpp
