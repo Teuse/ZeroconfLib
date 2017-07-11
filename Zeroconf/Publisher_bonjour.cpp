@@ -37,7 +37,7 @@ public:
 private:
 
     void servicePublished()           { _parent->_servicePublished(); }
-    void error(Error e)               { _parent->_error(e);           }
+    void error(Publisher::Error e)    { _parent->_error(e);           }
 
     void registerCallback(DNSServiceErrorType err);
 

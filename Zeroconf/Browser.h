@@ -26,12 +26,6 @@ namespace zeroconf {
 
 using ServicePtr = std::shared_ptr<Service>;
 
-enum Error 
-{
-    ZC_BROWSER_FAILED = -1,
-    ZC_BROWSER_ALRADY_RUNNING = -2
-};
-
 //---------------------------------------------------------------------
     
 class Browser
@@ -39,6 +33,12 @@ class Browser
    using Connection = boost::signals2::connection; 
 
 public:
+
+    enum Error 
+    {
+        ZC_BROWSER_FAILED = -1,
+        ZC_BROWSER_ALRADY_RUNNING = -2
+    };
 
 	Browser();
 	~Browser();

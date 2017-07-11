@@ -19,17 +19,17 @@ namespace zeroconf {
 
 //---------------------------------------------------------------------
 
-namespace convert 
+namespace convert
 {
     Protocol getProtokol(const struct sockaddr *res)
     {
-        switch(res->sa_family) 
+        switch(res->sa_family)
         {
             case AF_INET:  { return PROTOCOL_IPv4; break; }
             case AF_INET6: { return PROTOCOL_IPv6; break; }
             default:       { break; }
         }
-        return PROTOCOL_UNSPEC; 
+        return PROTOCOL_UNSPEC;
     }
 
     std::string getAddress(const struct sockaddr* res)
@@ -51,7 +51,7 @@ namespace convert
         }
 
         auto c = s.find('\0');
-        if (c != std::string::npos) 
+        if (c != std::string::npos)
             s.resize(c);
 
         return s;
@@ -76,7 +76,7 @@ public:
 
 private:
 
-    void error(Error e)                 { _parent->_error(e);           }
+    void error(Browser::Error e)        { _parent->_error(e);           }
     void serviceAdded(ServicePtr s)     { _parent->_serviceAdded(s);    }
     void serviceUpdated(ServicePtr s)   { _parent->_serviceUpdated(s);  }
     void serviceRemoved(ServicePtr s)   { _parent->_serviceRemoved(s);  }
@@ -106,7 +106,7 @@ private:
             const char *hostName, uint16_t port, uint16_t txtLen,	const char * txtRecord, void *userdata);
 
     static void DNSSD_API onAddressCallback(DNSServiceRef sdRef, DNSServiceFlags flags, uint32_t interfaceIndex,
-            DNSServiceErrorType err, const char *hostName, const struct sockaddr* address, uint32_t ttl, void *userdata);
+            DNSServiceErrorType err, const char*, const struct sockaddr* address, uint32_t ttl, void *userdata);
 };
 
 //---------------------------------------------------------------------
@@ -135,7 +135,7 @@ void Browser::Impl::start(const std::string& type)
 {
 	if (_browser) { error(ZC_BROWSER_ALRADY_RUNNING); return; }
 
-	auto err  = DNSServiceBrowse(&_browser, 0, 0, type.c_str(), 0, 
+	auto err  = DNSServiceBrowse(&_browser, 0, 0, type.c_str(), 0,
                                  (DNSServiceBrowseReply) Browser::Impl::onBrowseCallback, this);
 
     if (err != kDNSServiceErr_NoError) {
@@ -144,12 +144,12 @@ void Browser::Impl::start(const std::string& type)
         return;
     }
 
-    std::thread t([this]() 
+    std::thread t([this]()
     {
         auto err = DNSServiceProcessResult(_browser);
-        if (err != kDNSServiceErr_NoError) 
+        if (err != kDNSServiceErr_NoError)
         {
-           _queue.push([this]{ stop(); error(ZC_BROWSER_FAILED); }); 
+           _queue.push([this]{ stop(); error(ZC_BROWSER_FAILED); });
         }
     });
     t.detach();
@@ -171,7 +171,7 @@ void Browser::Impl::resolve()
     if (_work.empty() || _resolver) return;
 
     auto service = _work.front();
-    auto err     = DNSServiceResolve(&_resolver, kDNSServiceFlagsTimeout, service->interface, service->name.c_str(), 
+    auto err     = DNSServiceResolve(&_resolver, kDNSServiceFlagsTimeout, service->interface, service->name.c_str(),
                                      service->type.c_str(), service->domain.c_str(), (DNSServiceResolveReply) Browser::Impl::onResolverCallback, this);
 
     if (err != kDNSServiceErr_NoError) {
@@ -179,12 +179,12 @@ void Browser::Impl::resolve()
         return;
     }
 
-    std::thread t([this]() 
+    std::thread t([this]()
     {
         auto err = DNSServiceProcessResult(_resolver);
         if (err != kDNSServiceErr_NoError)
         {
-            _queue.push([this]{ stopResolve(); }); 
+            _queue.push([this]{ stopResolve(); });
         }
     });
     t.detach();
@@ -196,10 +196,10 @@ void Browser::Impl::stopResolve(bool all)
     {
         DNSServiceRefDeallocate(_resolver);
         _resolver = nullptr;
-        
-        if (all) 
+
+        if (all)
             _work.clear();
-        else     
+        else
         {
             _work.erase(_work.begin());
             resolve();
@@ -212,7 +212,7 @@ void Browser::Impl::stopResolve(bool all)
 //--- DNSSD Callbacks
 //---------------------------------------------------------------------
 
-void DNSSD_API Browser::Impl::onBrowseCallback(DNSServiceRef, DNSServiceFlags flags,	uint32_t interfaceIndex, DNSServiceErrorType err, 
+void DNSSD_API Browser::Impl::onBrowseCallback(DNSServiceRef, DNSServiceFlags flags,	uint32_t interfaceIndex, DNSServiceErrorType err,
                               const char *name, const char *type, const char *domain, void *userdata)
 {
 	auto* THIS = static_cast<Browser::Impl*>(userdata);
@@ -220,20 +220,20 @@ void DNSSD_API Browser::Impl::onBrowseCallback(DNSServiceRef, DNSServiceFlags fl
     auto t = std::string(type);
     auto d = std::string(domain);
     THIS->_queue.push([=]
-    { 
+    {
 	    if (err != kDNSServiceErr_NoError)  { THIS->stop(); THIS->error(ZC_BROWSER_FAILED); }
         else                                { THIS->browseCallback(flags, interfaceIndex, n, t, d); }
     });
 }
 
-void Browser::Impl::browseCallback(DNSServiceFlags flags, uint32_t interface, 
+void Browser::Impl::browseCallback(DNSServiceFlags flags, uint32_t interface,
                                     std::string name, std::string type, std::string domain)
 {
     auto key   = name + std::to_string(interface);
     auto isNew = _services.find(key) == _services.end();
-    if (flags & kDNSServiceFlagsAdd) 
+    if (flags & kDNSServiceFlagsAdd)
     {
-        if (isNew) 
+        if (isNew)
         {
             auto zcs = std::make_shared<Service>();
             zcs->name = name;
@@ -244,7 +244,7 @@ void Browser::Impl::browseCallback(DNSServiceFlags flags, uint32_t interface,
             resolve();
         }
     }
-    else if (!isNew) 
+    else if (!isNew)
     {
         serviceRemoved(_services[key]);
         _services.erase(key);
@@ -253,13 +253,13 @@ void Browser::Impl::browseCallback(DNSServiceFlags flags, uint32_t interface,
 
 //---------------------------------------------------------------------
 
-void DNSSD_API Browser::Impl::onResolverCallback(DNSServiceRef, DNSServiceFlags, uint32_t interfaceIndex, DNSServiceErrorType err, 
+void DNSSD_API Browser::Impl::onResolverCallback(DNSServiceRef, DNSServiceFlags, uint32_t interfaceIndex, DNSServiceErrorType err,
                                 const char*, const char* hostName, uint16_t port, uint16_t, const char*, void* userdata)
 {
 	auto* THIS = static_cast<Browser::Impl*>(userdata);
     auto h = std::string(hostName);
     THIS->_queue.push([=]
-    { 
+    {
 	    if (err != kDNSServiceErr_NoError) { THIS->stopResolve(); }
         else                               { THIS->resolverCallback(interfaceIndex, h, port); }
     });
@@ -271,7 +271,7 @@ void Browser::Impl::resolverCallback(uint32_t interfaceIndex, std::string hostNa
 	// service->port = qFromBigEndian<uint16_t>(port);
 	service->port = port;
 
-	auto err = DNSServiceGetAddrInfo(&_resolver, kDNSServiceFlagsForceMulticast, interfaceIndex, kDNSServiceProtocol_IPv4, hostName.c_str(), 
+	auto err = DNSServiceGetAddrInfo(&_resolver, kDNSServiceFlagsForceMulticast, interfaceIndex, kDNSServiceProtocol_IPv4, hostName.c_str(),
                                 (DNSServiceGetAddrInfoReply) Browser::Impl::onAddressCallback, this);
 
 	if (err != kDNSServiceErr_NoError) {
@@ -279,12 +279,12 @@ void Browser::Impl::resolverCallback(uint32_t interfaceIndex, std::string hostNa
         return;
     }
 
-    std::thread t([this]() 
+    std::thread t([this]()
     {
         auto err = DNSServiceProcessResult(_resolver);
-        if (err != kDNSServiceErr_NoError) 
+        if (err != kDNSServiceErr_NoError)
         {
-            _queue.push([this]{ stopResolve(); }); 
+            _queue.push([this]{ stopResolve(); });
         }
     });
     t.detach();
@@ -292,7 +292,7 @@ void Browser::Impl::resolverCallback(uint32_t interfaceIndex, std::string hostNa
 
 //---------------------------------------------------------------------
 
-void DNSSD_API Browser::Impl::onAddressCallback(DNSServiceRef,DNSServiceFlags flags, uint32_t interface, DNSServiceErrorType err, const char* name,
+void DNSSD_API Browser::Impl::onAddressCallback(DNSServiceRef,DNSServiceFlags flags, uint32_t interface, DNSServiceErrorType err, const char*,
 		                    const struct sockaddr* address, uint32_t, void* userdata)
 {
 	auto* THIS = static_cast<Browser::Impl*>(userdata);
@@ -301,7 +301,7 @@ void DNSSD_API Browser::Impl::onAddressCallback(DNSServiceRef,DNSServiceFlags fl
     auto a = convert::getAddress(address);
 
     THIS->_queue.push([=]
-    { 
+    {
 	    if (err != kDNSServiceErr_NoError) { THIS->stopResolve(); }
         else                               { THIS->addressCallback(flags, interface, a, p); }
     });
@@ -309,7 +309,7 @@ void DNSSD_API Browser::Impl::onAddressCallback(DNSServiceRef,DNSServiceFlags fl
 
 void Browser::Impl::addressCallback(DNSServiceFlags flags, uint32_t interfaceIndex, std::string address, Protocol protokol)
 {
-    if ((flags & kDNSServiceFlagsAdd) != 0) 
+    if ((flags & kDNSServiceFlagsAdd) != 0)
     {
         auto service = _work.front();
 
@@ -343,4 +343,4 @@ void Browser::poll()                            { _impl->poll(); }
 void Browser::start(const std::string& type)	{ _impl->start(type); }
 void Browser::stop() 							{ _impl->stop(); }
 
-} 
+}

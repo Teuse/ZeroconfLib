@@ -23,19 +23,17 @@ namespace zeroconf {
 
 //------------------------------------------------------------------------------
 
-enum Error 
-{
-    ZC_SERVICE_REGISTRATION_FAILED = -1,
-    ZC_SERVICE_NAME_COLLISION      = -2,
-};
-
-//---------------------------------------------------------------------
-    
 class Publisher
 {
    using Connection = boost::signals2::connection; 
 
 public:
+
+    enum Error 
+    {
+        ZC_SERVICE_REGISTRATION_FAILED = -1,
+        ZC_SERVICE_NAME_COLLISION      = -2,
+    };
 
 	Publisher();
 	~Publisher();
