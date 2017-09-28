@@ -13,7 +13,7 @@ CONFIG += c++14 \
 # --- Collect files
 # ------------------------------------------------------------------------------
 
-INCLUDEPATH += $$_PRO_FILE_PWD_ 
+INCLUDEPATH += $$_PRO_FILE_PWD_
 
 HEADERS += Zeroconf/Service.h \
            Zeroconf/Publisher.h \
@@ -26,11 +26,11 @@ SOURCES += Zeroconf/Browser_bonjour.cpp \
 # ------------------------------------------------------------------------------
 # --- Dependencies
 # ------------------------------------------------------------------------------
-BOOST_ROOT = $$_PRO_FILE_PWD_/../../../boost-ios/build/boost/1.64.0/ios/prefix
+BOOST_ROOT = $$_PRO_FILE_PWD_/../../boost-ios
 isEmpty(BOOST_ROOT){
     error("ZeroconfLib: BOOST_ROOT for ios is not defined")
 }
 
 INCLUDEPATH += $$BOOST_ROOT/include
 
-LIBS += -framework CoreServices 
+LIBS += -framework CoreServices
