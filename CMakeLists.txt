@@ -7,14 +7,8 @@ project(ZeroconfLib)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/config)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
 
-if (NOT IOS)
-    find_package(Boost REQUIRED)
-else()
-    if (NOT EXISTS ${BOOST_IOS_ROOT})
-        message(FATAL_ERROR "BOOST_ROOT doesn't exist: ${BOOST_IOS_ROOT}")
-    endif()
-    set(Boost_INCLUDE_DIRS "${BOOST_IOS_ROOT}/include")
-endif()
+find_package(NIBoost REQUIRED)
+
 
 #--------------------------------------------------------------------
 #--- Collecting all files
@@ -56,7 +50,8 @@ set_target_properties(ZeroconfLib PROPERTIES LINKER_LANGUAGE CXX)
 ##   Dependencies
 ##  --------------------------------------------------------------------------------------
 target_include_directories(ZeroconfLib PUBLIC .)
-target_include_directories(ZeroconfLib PUBLIC  ${Boost_INCLUDE_DIRS})
+
+target_link_libraries(ZeroconfLib PUBLIC boost_signals)
 
 if (APPLE)
     target_link_libraries(ZeroconfLib PUBLIC "-framework CoreServices")
