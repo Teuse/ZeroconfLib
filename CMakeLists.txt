@@ -53,8 +53,10 @@ target_include_directories(ZeroconfLib PUBLIC .)
 
 target_link_libraries(ZeroconfLib PUBLIC boost_signals)
 
-if (APPLE OR IOS)
+if (APPLE AND NOT IOS)
     target_link_libraries(ZeroconfLib PUBLIC "-framework CoreServices")
+elseif (IOS)
+    target_link_libraries(ZeroconfLib PUBLIC "-framework MobileCoreServices")
 elseif(WIN32)
     find_package(Bonjour REQUIRED)
     target_link_libraries(ZeroconfLib PUBLIC wsock32 ws2_32)
